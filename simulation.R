@@ -1,5 +1,5 @@
 # Per default a test setup is run
-# Behavior can be changed by setting the following to FALSE
+# To run the full simulation, set testonly to FALSE below
 testonly <- TRUE
 
 source("simulation_code/experiments.R", chdir = TRUE)
