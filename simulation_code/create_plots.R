@@ -89,18 +89,26 @@ plot_function_glm <- function(data, metric, title, design, coef_filter = 2) {
           axis.text.x = element_text(angle = 30, hjust = 1))
 }
 
-plot_function_weibull_zoom <- function(data, metric, title, design, coef_filter = 2, ylim_range = c(0, 3)) {
+plot_function_weibull_zoom <- function(data, metric, title, design, coef_filter = 2, iqr_mult = 5) {
   data_filtered <- data %>%
     filter(designs == design,
            coef_x3_m == coef_filter,
            models == 'Weibull',
-           !is.na(.data[[metric]]))
+           !is.na(.data[[metric]])) %>%
+    group_by(algorithm, progeff, rmvar) %>%
+    mutate(.q1 = quantile(.data[[metric]], 0.25, na.rm = TRUE),
+           .q3 = quantile(.data[[metric]], 0.75, na.rm = TRUE),
+           .iqr = .q3 - .q1,
+           .lo = ifelse(.iqr > 0, .q1 - iqr_mult * .iqr, -Inf),
+           .hi = ifelse(.iqr > 0, .q3 + iqr_mult * .iqr, Inf)) %>%
+    ungroup() %>%
+    filter(.data[[metric]] >= .lo, .data[[metric]] <= .hi) %>%
+    select(-.q1, -.q3, -.iqr, -.lo, -.hi)
   
   p <- ggplot(data_filtered, aes(x = rmvar, y = .data[[metric]], fill = algorithm)) +
-    geom_boxplot(position = position_dodge(width = 0.8)) +
+    geom_boxplot() +
     geom_hline(yintercept = 0, linetype = 'dashed', color = 'black') +
-    facet_wrap(~ progeff) +
-    coord_cartesian(ylim = ylim_range) +
+    facet_grid(algorithm ~ progeff, scales = 'free_y') +
     labs(title = paste(title, '- Weibull -', design),
          x = 'Missing Variable', y = title, fill = 'Method') +
     scale_fill_manual(values = c('GLM' = 'darkgoldenrod2', 'MOB' = 'cyan4', 'Base' = '#CC79A7',
