@@ -11,7 +11,7 @@ setups <- expand.grid(repl = seq(1, repl), n = n, rmvar = rmvar, models = models
                       coef_x2_m = coef_x2_m, coef_x3_m = coef_x3_m, 
                       coef_x1_t = coef_x1_t, coef_x2_t = coef_x2_t, progeff = progeff, stringsAsFactors = FALSE)
 setups$seed <- round(runif(nrow(setups)) * 1e8)
-pkgs <- c('batchtools', 'model4you', 'htesim', 'survival', 'MASS',
+pkgs <- c('batchtools', 'model4you', 'survival', 'MASS',
           'partykit', 'trtf', 'marginaleffects', 'gbm', 'mboost', 'grf')
 
 #----
@@ -21,6 +21,12 @@ pkgs <- c('batchtools', 'model4you', 'htesim', 'survival', 'MASS',
 rpkgs <- sapply(pkgs, require, character.only = TRUE)
 if (!all(rpkgs))
   sapply(pkgs[!rpkgs], install.packages)
+
+if (!require('htesim', character.only = TRUE)) {
+  if (!require('remotes', character.only = TRUE)) install.packages('remotes')
+  remotes::install_github('dandls/htesim')
+  library(htesim)
+}
 rpkgs <- sapply(pkgs, require, character.only = TRUE)
 if (!all(rpkgs))
   stop('could not attach all required packages')

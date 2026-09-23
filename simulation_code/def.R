@@ -1,6 +1,5 @@
 library(partykit)
 
-testonly <- FALSE
 seed <- 1003
 
 repl <- 100
